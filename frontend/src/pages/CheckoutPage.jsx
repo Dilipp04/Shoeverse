@@ -1,0 +1,19 @@
+import { useEffect, useState } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { api } from '../api'
+import { useShop } from '../context/ShopContext'
+import { formatPrice } from '../data/catalog'
+
+export default function CheckoutPage() {
+    const { cart, setToast, reloadCart } = useShop()
+    const navigate = useNavigate()
+    const [addresses, setAddresses] = useState([])
+    const [selected, setSelected] = useState()
+    const [form, setForm] = useState({ fullName: '', phone: '', addressLine1: '', city: '', state: '', pincode: '', country: 'India', isDefault: true })
+    useEffect(() => { api('/api/addresses').then(items => { setAddresses(items); setSelected(items.find(item => item.isDefault)?.id || items[0]?.id) }).catch(error => setToast(error.message)) }, [])
+    if (!cart?.items?.length) return <Navigate to="/cart" replace />
+    const update = (key, value) => setForm(current => ({ ...current, [key]: value }))
+    const saveAddress = async event => { event.preventDefault(); try { const address = await api('/api/addresses', { method: 'POST', body: JSON.stringify(form) }); setAddresses([...addresses, address]); setSelected(address.id) } catch (error) { setToast(error.message) } }
+    const placeOrder = async () => { if (!selected) return setToast('Add or select a delivery address first.'); try { const order = await api('/api/orders', { method: 'POST', body: JSON.stringify({ addressId: selected }) }); if (!window.Razorpay) throw new Error('Razorpay is still loading.'); new window.Razorpay({ key: order.razorpayKeyId, amount: Number(order.amount) * 100, currency: order.currency || 'INR', name: 'ShoeVerse', order_id: order.razorpayOrderId, handler: async response => { await api('/api/payments/verify', { method: 'POST', body: JSON.stringify({ razorpayOrderId: response.razorpay_order_id, razorpayPaymentId: response.razorpay_payment_id, razorpaySignature: response.razorpay_signature }) }); await reloadCart(); navigate('/account') } }).open() } catch (error) { setToast(error.message) } }
+    return <section className="mx-auto max-w-6xl px-5 py-12 lg:px-12"><h1 className="font-serif text-4xl">Checkout</h1><div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px]"><div className="rounded-2xl bg-white p-6 ring-1 ring-slate-200"><h2 className="font-serif text-2xl">Delivery address</h2><div className="mt-5 space-y-3">{addresses.map(address => <label key={address.id} className="flex gap-3 rounded-xl border p-4"><input type="radio" checked={selected === address.id} onChange={() => setSelected(address.id)} /> <span><b>{address.fullName}</b><br /><span className="text-sm text-slate-600">{address.addressLine1}, {address.city}, {address.state} - {address.pincode}</span></span></label>)}</div><form onSubmit={saveAddress} className="mt-6 grid gap-3 sm:grid-cols-2">{Object.entries({ fullName: 'Full name', phone: 'Phone', addressLine1: 'Address', city: 'City', state: 'State', pincode: 'Pincode' }).map(([key, label]) => <input key={key} required value={form[key]} onChange={event => update(key, event.target.value)} placeholder={label} className="rounded-lg border px-3 py-2.5 text-sm" />)}<button className="rounded-lg border px-4 py-3 text-sm font-semibold sm:col-span-2">Save address</button></form></div><aside className="h-fit rounded-2xl bg-white p-6 ring-1 ring-slate-200"><h2 className="font-serif text-2xl">Order summary</h2><p className="mt-6 flex justify-between border-y py-5 font-bold"><span>Total</span><span>{formatPrice(cart.total)}</span></p><button onClick={placeOrder} className="mt-6 w-full rounded-xl bg-[#101726] py-4 text-sm font-bold text-white">Pay securely</button></aside></div></section>
+}

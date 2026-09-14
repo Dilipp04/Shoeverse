@@ -1,0 +1,9 @@
+import { Search, ShoppingBag, UserRound } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { useShop } from '../../context/ShopContext'
+
+export default function Header() {
+    const { cart, signed, user } = useShop()
+    const staff = ['ADMIN', 'SUPER_ADMIN'].includes(user?.role)
+    return <header className="sticky top-0 z-20 border-b border-slate-200 bg-[#fbfaf7]/90 px-5 backdrop-blur lg:px-12"><div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-5"><Link to="/" className="font-serif text-2xl font-semibold">shoeverse<span className="text-[#ca8b4b]">.</span></Link><nav className="hidden gap-7 text-sm font-medium md:flex"><Link to="/shop">Shop</Link><Link to="/shop?view=new">New arrivals</Link><Link to="/shop?view=collections">Collections</Link>{staff && <Link className="text-[#a96f36]" to="/admin">Admin panel</Link>}</nav><Link to="/shop" className="hidden flex-1 items-center rounded-full bg-white px-4 py-2 text-sm text-slate-400 ring-1 ring-slate-200 lg:flex"><Search size={16} /><span className="ml-2">Search the collection</span></Link><div className="flex gap-2"><Link to={signed ? '/account' : '/login'} className="rounded-full p-2 hover:bg-white">{signed ? <span className="grid h-5 w-5 place-items-center rounded-full bg-[#ca8b4b] text-[10px] text-white">{user.name?.[0]}</span> : <UserRound size={20} />}</Link><Link to="/cart" className="relative rounded-full p-2 hover:bg-white"><ShoppingBag size={21} />{cart?.itemCount > 0 && <b className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-[#ca8b4b] text-[10px] text-white">{cart.itemCount}</b>}</Link></div></div></header>
+}
