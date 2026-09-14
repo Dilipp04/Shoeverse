@@ -1,15 +1,110 @@
-import { LogOut, MapPin } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { api } from '../api'
-import { useShop } from '../context/ShopContext'
-import { formatPrice } from '../data/catalog'
-import { Blank, Tab } from '../components/common/Tabs'
+import { LogOut, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { api } from "../api";
+import { useShop } from "../context/ShopContext";
+import { formatPrice } from "../data/catalog";
+import { Blank, Tab } from "../components/common/Tabs";
 
 export default function AccountPage() {
-    const { user, logout, setToast } = useShop()
-    const [tab, setTab] = useState('orders')
-    const [orders, setOrders] = useState([])
-    const [addresses, setAddresses] = useState([])
-    useEffect(() => { api('/api/orders?size=20').then(page => setOrders(page.content || [])).catch(error => setToast(error.message)); api('/api/addresses').then(setAddresses).catch(() => { }) }, [])
-    return <section className="mx-auto max-w-6xl px-5 py-12 lg:px-12"><div className="flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-widest text-[#a96f36]">My account</p><h1 className="mt-2 font-serif text-4xl">Hello, {user?.name?.split(' ')[0]}.</h1></div><button onClick={logout} className="flex items-center gap-2 text-sm"><LogOut size={16} /> Sign out</button></div><div className="mt-9 flex gap-6 border-b border-slate-200"><Tab active={tab === 'orders'} onClick={() => setTab('orders')}>Orders</Tab><Tab active={tab === 'addresses'} onClick={() => setTab('addresses')}>Addresses</Tab><Tab active={tab === 'profile'} onClick={() => setTab('profile')}>Profile</Tab></div>{tab === 'orders' && <div className="mt-6 space-y-4">{orders.length ? orders.map(order => <article key={order.id} className="rounded-2xl bg-white p-5 ring-1 ring-slate-200"><div className="flex justify-between gap-3"><div><b>{order.orderNumber}</b><p className="mt-1 text-sm text-slate-500">{new Date(order.createdAt).toLocaleDateString('en-IN')}</p></div><span className="rounded-full bg-[#eaf4ee] px-3 py-1 text-xs font-bold text-emerald-700">{order.orderStatus}</span></div><p className="mt-4 border-t pt-4 text-sm">{order.items?.length || 0} item(s) - <b>{formatPrice(order.totalAmount)}</b></p></article>) : <Blank text="No orders yet." />}</div>}{tab === 'addresses' && <div className="mt-6 grid gap-4 sm:grid-cols-2">{addresses.length ? addresses.map(address => <article key={address.id} className="rounded-2xl bg-white p-5 ring-1 ring-slate-200"><MapPin size={18} className="text-[#a96f36]" /><b className="mt-3 block">{address.fullName}</b><p className="mt-1 text-sm leading-6 text-slate-600">{address.addressLine1}, {address.city}, {address.state} - {address.pincode}<br />{address.phone}</p></article>) : <Blank text="No saved addresses." />}</div>}{tab === 'profile' && <div className="mt-6 max-w-lg rounded-2xl bg-white p-6 ring-1 ring-slate-200"><p className="text-sm text-slate-500">Name</p><p className="font-semibold">{user?.name}</p><p className="mt-5 text-sm text-slate-500">Email</p><p className="font-semibold">{user?.email}</p><p className="mt-5 text-sm text-slate-500">Account type</p><p className="font-semibold">{user?.role}</p></div>}</section>
+    const { user, logout, setToast } = useShop();
+    const [tab, setTab] = useState("orders");
+    const [orders, setOrders] = useState([]);
+    const [addresses, setAddresses] = useState([]);
+    useEffect(() => {
+        api("/api/orders?size=20")
+            .then((page) => setOrders(page.content || []))
+            .catch((error) => setToast(error.message));
+        api("/api/addresses")
+            .then(setAddresses)
+            .catch(() => { });
+    }, []);
+    return (
+        <section className="mx-auto max-w-6xl px-5 py-12 lg:px-12">
+            <div className="flex items-start justify-between">
+                <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-[#a96f36]">
+                        My account
+                    </p>
+                    <h1 className="mt-2 font-serif text-4xl">
+                        Hello, {user?.name?.split(" ")[0]}.
+                    </h1>
+                </div>
+                <button onClick={logout} className="flex items-center gap-2 text-sm">
+                    <LogOut size={16} /> Sign out
+                </button>
+            </div>
+            <div className="mt-9 flex gap-6 border-b border-slate-200">
+                <Tab active={tab === "orders"} onClick={() => setTab("orders")}>
+                    Orders
+                </Tab>
+                <Tab active={tab === "addresses"} onClick={() => setTab("addresses")}>
+                    Addresses
+                </Tab>
+                <Tab active={tab === "profile"} onClick={() => setTab("profile")}>
+                    Profile
+                </Tab>
+            </div>
+            {tab === "orders" && (
+                <div className="mt-6 space-y-4">
+                    {orders.length ? (
+                        orders.map((order) => (
+                            <article
+                                key={order.id}
+                                className="rounded-2xl bg-white p-5 ring-1 ring-slate-200">
+                                <div className="flex justify-between gap-3">
+                                    <div>
+                                        <b>{order.orderNumber}</b>
+                                        <p className="mt-1 text-sm text-slate-500">
+                                            {new Date(order.createdAt).toLocaleDateString("en-IN")}
+                                        </p>
+                                    </div>
+                                    <span className="rounded-full bg-[#eaf4ee] px-3 py-2 h-8 text-xs font-bold text-emerald-700">
+                                        {order.orderStatus}
+                                    </span>
+                                </div>
+                                <p className="mt-4 border-t pt-4 text-sm">
+                                    {order.items?.length || 0} item(s) -{" "}
+                                    <b>{formatPrice(order.totalAmount)}</b>
+                                </p>
+                            </article>
+                        ))
+                    ) : (
+                        <Blank text="No orders yet." />
+                    )}
+                </div>
+            )}
+            {tab === "addresses" && (
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                    {addresses.length ? (
+                        addresses.map((address) => (
+                            <article
+                                key={address.id}
+                                className="rounded-2xl bg-white p-5 ring-1 ring-slate-200">
+                                <MapPin size={18} className="text-[#a96f36]" />
+                                <b className="mt-3 block">{address.fullName}</b>
+                                <p className="mt-1 text-sm leading-6 text-slate-600">
+                                    {address.addressLine1}, {address.city}, {address.state} -{" "}
+                                    {address.pincode}
+                                    <br />
+                                    {address.phone}
+                                </p>
+                            </article>
+                        ))
+                    ) : (
+                        <Blank text="No saved addresses." />
+                    )}
+                </div>
+            )}
+            {tab === "profile" && (
+                <div className="mt-6 max-w-lg rounded-2xl bg-white p-6 ring-1 ring-slate-200">
+                    <p className="text-sm text-slate-500">Name</p>
+                    <p className="font-semibold">{user?.name}</p>
+                    <p className="mt-5 text-sm text-slate-500">Email</p>
+                    <p className="font-semibold">{user?.email}</p>
+                    <p className="mt-5 text-sm text-slate-500">Account type</p>
+                    <p className="font-semibold">{user?.role}</p>
+                </div>
+            )}
+        </section>
+    );
 }

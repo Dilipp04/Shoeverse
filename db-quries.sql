@@ -53,6 +53,7 @@ VALUES (
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 );
-update products set  image_url  = 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/db300c8e-d6f8-4ef7-891d-e7b2de978b38/NIKE+DUNK+LOW+%28GS%29.png' where id = 18;
+update products set  image_url  = 
+'https://cdna.lystit.com/1040/1300/n/photos/farfetch/197b525e/bally-marron-Chaussures-Oxford-Regent-En-Cuir.jpeg'
+ where id = 4;
 select * from products;
-delete from products where id = 16;

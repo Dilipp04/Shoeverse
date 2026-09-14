@@ -40,6 +40,12 @@ export function ShopProvider({ children }) {
 
     useEffect(() => { reloadCart() }, [signed])
 
+    useEffect(() => {
+        if (!toast) return undefined
+        const timer = window.setTimeout(() => setToast(''), 3000)
+        return () => window.clearTimeout(timer)
+    }, [toast])
+
     const addToCart = async (product, quantity = 1) => {
         if (!signed) {
             setToast('Please sign in before adding items to your bag.')
